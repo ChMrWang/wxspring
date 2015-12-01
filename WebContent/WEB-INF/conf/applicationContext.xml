@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://www.springframework.org/schema/mvc 
+		http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+
+	<!--表示spring支持注解，声明注解的包名，此处可省略-->
+	<context:annotation-config /> 
+	<!-- <context:component-scan base-package="com.entityDao"/> -->
+	<context:component-scan base-package="controller"/>
+
+	<!-- 配置数据源 -->
+	<bean id="MySqlDataSource" class="org.apache.commons.dbcp.BasicDataSource">  <!--选择数据库连接池 -->
+		<property name="driverClassName" value="com.mysql.jdbc.Driver"></property> <!-- 数据库连接的配置文件 -->
+		<property name="url"
+			value="jdbc:mysql://localhost:3306/spring?userUnicode=true&amp;characterEncoding=utf-8"></property>
+		<property name="username" value="root"></property>
+		<property name="password" value="root"></property>
+	</bean>
+
+	<!-- 配置session工厂，加载工厂类，AnnotationSessionFactoryBean支持注解 -->
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="MySqlDataSource" />
+		</property>
+
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop> <!-- 选择相应的数据库方言翻译器 -->
+				<prop key="hibernate.show_sql">true</prop>  <!-- 表示在日志中打印出sql语句 -->
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>  <!--自动建表 -->
+			</props>
+		</property>
+
+		<property name="packagesToScan">
+			<list>
+				<!-- 选择实体类所在包 -->
+				<value>com.entity</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- 表示所使用的dao类 -->
+	<bean id="daoimpl" class="com.entityDao.EntityDaoImpl">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	<!--  <bean id="msghandler" class="controller.weixin.msgutils.MsgUtilImpl"/>-->
+
+
+	<!-- 事务管理配置 -->
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory">
+			<ref local="sessionFactory" />
+		</property>
+	</bean>
+</beans>	
+	
